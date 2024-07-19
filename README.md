@@ -1,8 +1,8 @@
 # Прогноз погоды
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
-[![Django](https://img.shields.io/badge/-Geopy-464646?style=flat-square&logo=Geopy)](https://geopy.readthedocs.io/en/stable/index.html/)
-[![Django](https://img.shields.io/badge/-Open Meteo API-464646?style=flat-square&logo=Open Meteo API)](https://open-meteo.com//)
+[![Geopy](https://img.shields.io/badge/-Geopy-464646?style=flat-square&logo=Geopy)](https://geopy.readthedocs.io/en/stable/index.html/)
+[![Open Meteo](https://img.shields.io/badge/-Open Meteo API-464646?style=flat-square&logo=Open Meteo API)](https://open-meteo.com/)
 Приложение для получения прогноза погоды по введенному названию города. Пользователи могут вводить название города, и приложение отображает текущие данные о погоде, включая температуру, влажность, скорость и направление ветра.
 
 ## Функциональность
@@ -22,28 +22,28 @@
 
 1. Клонируйте репозиторий:
 
-  ```bash
-git clone https://github.com/ваш_пользователь/ваш_репозиторий.git
-cd ваш_репозиторий
+```bash
+   git clone https://github.com/ваш_пользователь/ваш_репозиторий.git
+   cd ваш_репозиторий
 
 #2. Создайте и активируйте виртуальное окружение:
-  ```bash
-python -m venv venv
-source venv/bin/activate  # Для Linux/Mac
-venv\Scripts\activate  # Для Window
+```bash
+   python -m venv venv
+   source venv/bin/activate  # Для Linux/Mac
+   venv\Scripts\activate  # Для Window
 
 #3. Установите зависимости проекта
-  ```bash
-pip install -r requirements.txt
+```bash
+   pip install -r requirements.txt
 
 #4. Выполните миграции базы данных
-  ```bash
-python manage.py makemigrations
-python manage.py migrate
+```bash
+   python manage.py makemigrations
+   python manage.py migrate
 
 #5. Запустите сервер разработки
-  ```bash
-python manage.py runserver
+```bash
+   python manage.py runserver
 
 #6. Откройте браузер и перейдите по адресу: http://127.0.0.1:8000
 
@@ -55,8 +55,8 @@ python manage.py runserver
 
 ##Тестирование
 Для запуска тестов используйте следующую команду:
-  ```bash
-python manage.py test
+```bash
+   python manage.py test
 
 #### Автор проекта
 

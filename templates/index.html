@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогноз погоды</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #weather-result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            background-color: #e9f5ff;
+        }
+        .recent-searches {
+            margin-top: 20px;
+        }
+        .recent-searches h2 {
+            margin-bottom: 10px;
+        }
+        .recent-searches ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .recent-searches li {
+            background: #f8f9fa;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Прогноз погоды</h1>
+    <input type="text" id="city-input" placeholder="Введите название города">
+    <button onclick="getWeather()">Получить погоду</button>
+    
+    <div id="weather-result"></div>
+
+    <div class="recent-searches">
+        <h2>Недавние запросы:</h2>
+        <ul id="recent-searches-list">
+            <!-- Здесь будут отображаться недавние запросы -->
+        </ul>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function getWeather() {
+        var city = $('#city-input').val();
+        $.ajax({
+            url: '/127.0.0.1:8000/get_coordinates/',  // Убедитесь, что этот URL соответствует вашему маршруту
+            data: {
+                'city': city
+            },
+            success: function(data) {
+                var weatherHtml = `
+                    <h2>Погода в ${city}</h2>
+                    <p>Температура: ${data.temperature}°C</p>
+                    <p>Скорость ветра: ${data.windspeed} km/h</p>
+                    <p>Направление ветра: ${data.winddirection}°</p>
+                `;
+                $('#weather-result').html(weatherHtml);
+                addRecentSearch(city);  // Добавляем город в список недавних запросов
+            },
+            error: function() {
+                $('#weather-result').html('<p>Ошибка при получении данных о погоде. Попробуйте еще раз.</p>');
+            }
+        });
+    }
+
+    function addRecentSearch(city) {
+        $('#recent-searches-list').append(`<li>${city}</li>`);
+    }
+</script>
+
+</body>
+</html>

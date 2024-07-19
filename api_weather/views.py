@@ -5,14 +5,14 @@ from django.db.models import F
 from geopy.geocoders import Nominatim
 import requests
 from django.http import JsonResponse
-from .models import SearchHistory
+from api_weather.models import SearchHistory
 
 
-
+city = 'Оренбург'
 #достаем кооридинаты города
-def get_coordinates():
+def get_coordinates(city):
     geolocator = Nominatim(user_agent="api_weather")
-    adress = "Оренбург"
+    adress = city
     location = geolocator.geocode(adress)
     if location:
         return location.latitude, location.longitude
@@ -64,9 +64,8 @@ def request_to_api(request):
     }
     # получаем параметры запроса
     res = SearchHistory.objects.all()
-    print(res)
-    # Сохранение истории поиска
-    if  res.user_id:
+    #Сохранение истории поиска
+    if res.user_id:
         SearchHistory.objects.create(user_id=user_id, city=city, count_city=1)
     if res.user_id and res.city:
         SearchHistory.objects.update(count_city=F('count_city')+1)
@@ -92,3 +91,4 @@ def request_to_api(request):
         key, key): value for key, value in result.items()}
     
     return translated_response, real_status_weather
+print(request_to_api(requests))

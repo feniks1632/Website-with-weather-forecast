@@ -1,94 +1,87 @@
-from django.shortcuts import render
-from pathlib import Path
 import os
-from django.db.models import F
-from geopy.geocoders import Nominatim
+import uuid
+
+from pathlib import Path
+
 import requests
+from django.db.models import F
 from django.http import JsonResponse
+from django.shortcuts import render
+from geopy.geocoders import Nominatim
+
 from api_weather.models import SearchHistory
 
+#записываем куки
+def index(request):
+    user_id = request.COOKIES.get('user_id')
 
-city = 'Оренбург'
-#достаем кооридинаты города
-def get_coordinates(city):
-    geolocator = Nominatim(user_agent="api_weather")
-    adress = city
-    location = geolocator.geocode(adress)
-    if location:
-        return location.latitude, location.longitude
-    return None
+    if not user_id:
+        user_id = str(uuid.uuid4())
+        response = render(request, 'index.html', {})
+        response.set_cookie('user_id', user_id)
+        return response
+
+    recent_searches = SearchHistory.objects.filter(user_id=user_id)[:5]
+    context = {
+        'recent_searches': recent_searches
+    }
+
+    return render(request, 'index.html', context=context)
 
 
 def request_to_api(request):
-    # словарь переводчик
-    translation_dict = {
-        "time": "время",
-        "interval": "интервал",
-        "temperature_2m": "температура",
-        "relative_humidity_2m": "влажность",
-        "apparent_temperature": "ощущаемая температура",
-        "weather_code": "код погоды",
-        "wind_speed_10m": "скорость ветра",
-        "wind_direction_10m": "направление ветра",
-    }
-    # словарь с кодами погоды
-    weather_code_dict = {
-        0: "Чистое небо",
-        1: "Преимущественно ясно, переменная облачность и пасмурно",
-        2: "Преимущественно ясно, переменная облачность и пасмурно",
-        3: "Преимущественно ясно, переменная облачность и пасмурно",
-        45: "Туман и отложение инея",
-        48: "Туман и отложение инея",
-        51: "Морось: легкая",
-        53: "Морось: умеренная",
-        55: "Морось: интенсивная",
-        56: "Моросящий дождь: легкая интенсивность",
-        57: "Моросящий дождь: плотная интенсивность",
-        61: "Дождь: небольшой",
-        63: "Дождь: умеренной интенсивности",
-        65: "Дождь: сильной интенсивности",
-        66: "Ледяной дождь: небольшой",
-        67: "Ледяной дождь: сильной интенсивности",
-        71: "Снегопад: слабой интенсивности",
-        73: "Снегопад: умеренной интенсивности",
-        75: "Снегопад: сильной интенсивности",
-        77: "Снежные зерна",
-        80: "Ливни: слабые",
-        81: "Ливни: умеренные",
-        82: "Ливни: сильные",
-        85: "Небольшой снегопад",
-        86: "Сильный снегопад",
-        95: "Гроза: Слабая или умеренная",
-        96: "Гроза с небольшим градом",
-        99: "Гроза с сильным градом",
-    }
-    # получаем параметры запроса
-    res = SearchHistory.objects.all()
-    #Сохранение истории поиска
-    if res.user_id:
-        SearchHistory.objects.create(user_id=user_id, city=city, count_city=1)
-    if res.user_id and res.city:
-        SearchHistory.objects.update(count_city=F('count_city')+1)
+    # Получаем параметры запроса
+    city = request.GET.get('city')
 
-    # заполняем словарь с параметрами запроса, координатами и URL и получаем ответ от сервера
-    latitude, longitude = get_coordinates()
-    api_path = "https://api.open-meteo.com/v1/forecast?"
+    # Проверить пустой ли он
+    if not city:
+        return JsonResponse(
+            {"error": "Необходимо ввести название города"}, status=400)
+
+    latitude, longitude = get_coordinates(city)
+
+    if latitude is None or longitude is None:
+        return JsonResponse(
+            {"error": "Введите корректное название города"}, status=404)
+
+    # Получить куки и историю поиска
+    user_id = request.COOKIES.get('user_id')
+    res = SearchHistory.objects.filter(user_id=user_id, city=city)
+
+    if not res:
+        SearchHistory.objects.create(user_id=user_id, city=city, count_city=1)
+    else:
+        res.update(count_city=F('count_city') + 1)
+
+    api_path = "https://api.open-meteo.com/v1/forecast"
     data = "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m"
     params = {
         "latitude": latitude,
         "longitude": longitude,
         "current": data
     }
+
     response = requests.get(api_path, params=params)
-    result = response.json()["current"]
 
-    # выыод текущего статуса погоды
+    if response.status_code != 200:
+        return JsonResponse(
+            {"error": "Ошибка при получении данных о погоде"}, status=500)
+
+    result = response.json().get("current")
+    print(result)
+
     status_weather = result["weather_code"]
-    real_status_weather = weather_code_dict[status_weather]
 
-    # перевод ключей в русский язык
-    translated_response = {translation_dict.get(
-        key, key): value for key, value in result.items()}
-    
-    return translated_response, real_status_weather
-print(request_to_api(requests))
+    return JsonResponse({
+        "weather_response": result,
+        "real_status": status_weather
+    })
+
+
+def get_coordinates(city):
+    geolocator = Nominatim(user_agent="api_weather")
+    location = geolocator.geocode(city)
+    if location:
+        print(location.latitude, location.longitude)# оставили для проверки координат :)
+        return location.latitude, location.longitude
+    return None, None

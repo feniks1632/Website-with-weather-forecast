@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,18 +13,21 @@
             margin: 0;
             padding: 20px;
         }
+
         h1 {
             text-align: center;
             color: #333;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         input[type="text"] {
             width: calc(100% - 22px);
             padding: 10px;
@@ -31,6 +35,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         button {
             width: 100%;
             padding: 10px;
@@ -40,9 +45,11 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         #weather-result {
             margin-top: 20px;
             padding: 10px;
@@ -50,16 +57,20 @@
             border-radius: 4px;
             background-color: #e9f5ff;
         }
+
         .recent-searches {
             margin-top: 20px;
         }
+
         .recent-searches h2 {
             margin-bottom: 10px;
         }
+
         .recent-searches ul {
             list-style-type: none;
             padding: 0;
         }
+
         .recent-searches li {
             background: #f8f9fa;
             margin: 5px 0;
@@ -68,52 +79,110 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Прогноз погоды</h1>
-    <input type="text" id="city-input" placeholder="Введите название города">
-    <button onclick="getWeather()">Получить погоду</button>
-    
-    <div id="weather-result"></div>
+    <div class="container">
+        <h1>Прогноз погоды</h1>
+        <input type="text" id="city-input" placeholder="Введите название города">
+        <button onclick="getWeather()">Получить погоду</button>
 
-    <div class="recent-searches">
-        <h2>Недавние запросы:</h2>
-        <ul id="recent-searches-list">
-            <!-- Здесь будут отображаться недавние запросы -->
-        </ul>
+        <div id="weather-result"></div>
+
+        <div class="recent-searches">
+            <h2>Недавние запросы:</h2>
+            <ul id="recent-searches-list">
+                <!-- Здесь будут отображаться недавние запросы -->
+            </ul>
+        </div>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    function getWeather() {
-        var city = $('#city-input').val();
-        $.ajax({
-            url: '/127.0.0.1:8000/get_coordinates/',  // Убедитесь, что этот URL соответствует вашему маршруту
-            data: {
-                'city': city
-            },
-            success: function(data) {
-                var weatherHtml = `
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        TRANSLATIONS_DICT = {
+            "time": "время",
+            "interval": "интервал",
+            "temperature_2m": "температура",
+            "relative_humidity_2m": "влажность",
+            "apparent_temperature": "ощущаемая температура",
+            "weather_code": "код погоды",
+            "wind_speed_10m": "скорость ветра",
+            "wind_direction_10m": "направление ветра",
+        }
+    </script>
+    <script>
+        WEATHER_CODE_DICT = {
+            0: "Чистое небо",
+            1: "Преимущественно ясно, переменная облачность и пасмурно",
+            2: "Преимущественно ясно, переменная облачность и пасмурно",
+            3: "Преимущественно ясно, переменная облачность и пасмурно",
+            45: "Туман и отложение инея",
+            48: "Туман и отложение инея",
+            51: "Морось: легкая",
+            53: "Морось: умеренная",
+            55: "Морось: интенсивная",
+            56: "Моросящий дождь: легкая интенсивность",
+            57: "Моросящий дождь: плотная интенсивность",
+            61: "Дождь: небольшой",
+            63: "Дождь: умеренной интенсивности",
+            65: "Дождь: сильной интенсивности",
+            66: "Ледяной дождь: небольшой",
+            67: "Ледяной дождь: сильной интенсивности",
+            71: "Снегопад: слабой интенсивности",
+            73: "Снегопад: умеренной интенсивности",
+            75: "Снегопад: сильной интенсивности",
+            77: "Снежные зерна",
+            80: "Ливни: слабые",
+            81: "Ливни: умеренные",
+            82: "Ливни: сильные",
+            85: "Небольшой снегопад",
+            86: "Сильный снегопад",
+            95: "Гроза: Слабая или умеренная",
+            96: "Гроза с небольшим градом",
+            99: "Гроза с сильным градом",
+        }
+    </script>
+    <script>
+        function getWeather() {
+            var city = $('#city-input').val();
+            $.ajax({
+                url: 'http://127.0.0.1:8000/request_to_api/',  // Убедитесь, что этот URL соответствует вашему маршруту
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    'city': city
+                },
+                success: function (data) {
+                    console.log(data.weather_response);
+                    var weather_response = data.weather_response;
+
+                    var weatherHtml = `
                     <h2>Погода в ${city}</h2>
-                    <p>Температура: ${data.temperature}°C</p>
-                    <p>Скорость ветра: ${data.windspeed} km/h</p>
-                    <p>Направление ветра: ${data.winddirection}°</p>
+                    <P>интервал: ${weather_response.interval}</P>
+                    <p>Температура: ${weather_response.temperature_2m}°C</p>
+                    <P>Влажность: ${weather_response.relative_humidity_2m}%</P>
+                    <p>Ощущаемая температура: ${weather_response.apparent_temperature}°C</p>
+                    <p>Скорость ветра: ${weather_response.wind_speed_10m} km/h</p>
+                    <p>Направление ветра: ${weather_response.wind_direction_10m}°</p>
+                    <p>Статус погоды: ${WEATHER_CODE_DICT[data.real_status]}</p>
                 `;
-                $('#weather-result').html(weatherHtml);
-                addRecentSearch(city);  // Добавляем город в список недавних запросов
-            },
-            error: function() {
-                $('#weather-result').html('<p>Ошибка при получении данных о погоде. Попробуйте еще раз.</p>');
-            }
-        });
-    }
+                    $('#weather-result').html(weatherHtml);
+                    addRecentSearch(city);  // Добавляем город в список недавних запросов
+                },
+                error: function (error_responce) {
+                    var error_messages = error_responce.responseJSON.error;
+                    console.log(error_responce.responseJSON);
+                    $('#weather-result').html(`<p>Ошибка при получении данных ${error_messages}.</p>`);
+                }
+            });
+        }
 
-    function addRecentSearch(city) {
-        $('#recent-searches-list').append(`<li>${city}</li>`);
-    }
-</script>
+        function addRecentSearch(city) {
+            $('#recent-searches-list').append(`<li>${city}</li>`);
+        }
+    </script>
 
 </body>
+
 </html>

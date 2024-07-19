@@ -1,18 +1,36 @@
-import requests
-from api_weather.views import request_to_api
-
-# Создаем фиктивный запрос
-class FakeRequest:
-    def __init__(self):
-        self.user_id = "test_user"
-        self.city = "Оренбург"
-        self.search_time = "2024-07-19 17:47:00"
+import unittest
+from unittest.mock import patch
+from api_weather.views import get_coordinates
 
 
-# Тестируем функцию
-def test_request_to_api():
-    request = FakeRequest()
-    response = request_to_api(request)
-    print(response)
+class TestGetCoordinates(unittest.TestCase):
 
-test_request_to_api()
+    @patch('api_weather.views.Nominatim')
+    def test_get_coordinates_success(self, mock_geolocator):
+        # Настройка имитации
+        mock_location = mock_geolocator.return_value.geocode.return_value
+        mock_location.latitude = 55.1
+        mock_location.longitude = 53.0
+
+        # Вызов функции
+        latitude, longitude = get_coordinates("Оренбург")
+
+        # Проверка результатов
+        self.assertEqual(latitude, 55.1)
+        self.assertEqual(longitude, 53.0)
+
+    @patch('api_weather.views.Nominatim')
+    def test_get_coordinates_failure(self, mock_geolocator):
+        # Настройка имитации для случая, когда город не найден
+        mock_geolocator.return_value.geocode.return_value = None
+
+        # Вызов функции
+        latitude, longitude = get_coordinates("НеизвестныйГород")
+
+        # Проверка результатов
+        self.assertIsNone(latitude)
+        self.assertIsNone(longitude)
+
+
+if __name__ == '__main__':
+    unittest.main()

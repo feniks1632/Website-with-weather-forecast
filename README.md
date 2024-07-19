@@ -25,25 +25,30 @@
 ```bash
    git clone https://github.com/ваш_пользователь/ваш_репозиторий.git
    cd ваш_репозиторий
+```
 
 #2. Создайте и активируйте виртуальное окружение:
 ```bash
    python -m venv venv
    source venv/bin/activate  # Для Linux/Mac
    venv\Scripts\activate  # Для Window
+```
 
 #3. Установите зависимости проекта
 ```bash
    pip install -r requirements.txt
+```
 
 #4. Выполните миграции базы данных
 ```bash
    python manage.py makemigrations
    python manage.py migrate
+```
 
 #5. Запустите сервер разработки
 ```bash
    python manage.py runserver
+```
 
 #6. Откройте браузер и перейдите по адресу: http://127.0.0.1:8000
 
@@ -57,6 +62,7 @@
 Для запуска тестов используйте следующую команду:
 ```bash
    python manage.py test
+```
 
 #### Автор проекта
 

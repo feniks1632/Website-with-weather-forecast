@@ -2,7 +2,7 @@
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
 [![Geopy](https://img.shields.io/badge/-Geopy-464646?style=flat-square&logo=Geopy)](https://geopy.readthedocs.io/en/stable/index.html)
-[![Open Meteo](https://img.shields.io/badge/-Open-464646?style=flat-square&logo=Open)](https://open-meteo.com/)
+[![Open_Meteo](https://img.shields.io/badge/-Open_meteo-464646?style=flat-square&logo=Open_meteo)](https://open-meteo.com/)
 Приложение для получения прогноза погоды по введенному названию города. Пользователи могут вводить название города, и приложение отображает текущие данные о погоде, включая температуру, влажность, скорость и направление ветра.
 
 ## Функциональность

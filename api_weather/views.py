@@ -11,7 +11,9 @@ from geopy.geocoders import Nominatim
 
 from api_weather.models import SearchHistory
 
-#записываем куки
+# записываем куки
+
+
 def index(request):
     user_id = request.COOKIES.get('user_id')
 
@@ -43,6 +45,9 @@ def request_to_api(request):
     if latitude is None or longitude is None:
         return JsonResponse(
             {"error": "Введите корректное название города"}, status=404)
+
+    if not validate_city_with_coordinates(city, latitude, longitude):
+        return JsonResponse({"error": "Введите корректное название города"}, status=404)
 
     # Получить куки и историю поиска
     user_id = request.COOKIES.get('user_id')
@@ -82,6 +87,17 @@ def get_coordinates(city):
     geolocator = Nominatim(user_agent="api_weather")
     location = geolocator.geocode(city)
     if location:
-        print(location.latitude, location.longitude)# оставили для проверки координат :)
+        # оставили для проверки координат :)
+        print(location.latitude, location.longitude)
         return location.latitude, location.longitude
     return None, None
+
+
+def validate_city_with_coordinates(city, latitude, longitude):
+    if city.isdigit():
+        return False
+    geolocator = Nominatim(user_agent="api_weather")
+    location = geolocator.reverse((latitude, longitude))
+    if location and city.lower() in location.address.lower():
+        return True
+    return False
